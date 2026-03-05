@@ -3,19 +3,35 @@ from sentence_transformers import SentenceTransformer
 import torch
 from pymongo import MongoClient
 import math
-import data.secret as secret
+
+import boto3
+
+# 파라메터 가져오기
+# SSM 클라이언트 생성
+ssm = boto3.client('ssm', region_name='ap-northeast-2')
+
+def get_parameter(parameter_name, isDescrypt=False):
+    try:
+        response = ssm.get_parameter(
+            Name=parameter_name,
+            WithDecryption=isDescrypt
+        )
+        return response['Parameter']['Value']
+    except Exception as e:
+        print(f"파라미터 조회 실패: {e}")
+        return None
 
 # 몽고db 연결
-host = secret.host
+host = get_parameter('/search-api/prod/mongoDBKey', isDescrypt=True)
 client = MongoClient(host, 27017)
 db = client['Document_DB']
 chunk_collection = db['SUMMARY_INFO_B']
 title_collection = db['TITLE']
 
 # LLM 모델 로드
-#model_path =  'C:/model/directory'
+model_path =  get_parameter('/search-api/prod/model-path')
 
-model = SentenceTransformer(secret.model_path)
+model = SentenceTransformer(model_path)
 
 if torch.cuda.is_available():
     model.to('cuda')
