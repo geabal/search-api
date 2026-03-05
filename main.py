@@ -11,8 +11,7 @@ def read_root():
 @app.get("/search")
 def search(q: Union[str, None] = None):
     if not q:
-        return {"q":None, "title":[], "chunk":[], "url":[],"score":[], "status": 200}
+        return {"q":None, "result":[], "status": 200}
     
     res = hs.hybrid_search(user_qeury=q)
-
     return res

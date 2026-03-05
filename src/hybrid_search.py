@@ -3,9 +3,10 @@ from sentence_transformers import SentenceTransformer
 import torch
 from pymongo import MongoClient
 import math
+import data.secret as secret
 
 # 몽고db 연결
-#host = 'mongodb+srv://'
+host = secret.host
 client = MongoClient(host, 27017)
 db = client['Document_DB']
 chunk_collection = db['SUMMARY_INFO_B']
@@ -14,7 +15,7 @@ title_collection = db['TITLE']
 # LLM 모델 로드
 #model_path =  'C:/model/directory'
 
-model = SentenceTransformer(model_path)
+model = SentenceTransformer(secret.model_path)
 
 if torch.cuda.is_available():
     model.to('cuda')
@@ -28,7 +29,7 @@ def hybrid_search(user_qeury:str=''):
     하이브리드 검색을 수행하는 wrapper 함수
     '''
     if not user_qeury:
-        return {"q":None, "title":[], "chunk":[], "url":[],"score":[], "status": 200}
+        return {"q":None, "status": 200, 'result':[]}
     title_res, query_embedding = hybrid_search_title(user_query=user_qeury)
 
     urls = [row['url'] for row in title_res]
@@ -36,12 +37,10 @@ def hybrid_search(user_qeury:str=''):
 
     concat_res = concat(title_res, chunk_res)
     concat_res = prettify(user_query=user_qeury, search_res=concat_res)
+    response = {'q':user_qeury, 'result':concat_res, 'status':200}
 
-    if concat_res:
-        concat_res['status'] = 200
-        return concat_res
-    else:
-        return {"q":user_qeury, "title":[], "chunk":[], "url":[],"score":[], "status": 200}
+    return response
+
 
 def hybrid_search_title(user_query, filter: Optional[Dict] = {}):
     #벡터 검색, 키워드 검색 결과를 가져온다.
@@ -155,19 +154,12 @@ def prettify(user_query, search_res):
     '''
     검색 결과를 fastapi에서 이해할 수 있는 형식으로 다듬는 함수
     '''
-    api_res = {'q':user_query, 'url':[],'chunk':[],'score':[], 'title':[], 'published_date':[]}
-    for doc in search_res:
-        api_res['url'].append(doc['url'])
-        api_res['chunk'].append(doc['chunk'])
-        api_res['score'].append(doc['RRFscore'])
-        api_res['title'].append(doc['title'])
+    for i, row in enumerate(search_res):
+        search_res[i]['_id'] = str(search_res[i]['_id'])
+        if math.isnan(search_res[i]['published_date']):
+            search_res[i]['published_date'] = 'None'
 
-        if not math.isnan(doc['published_date']):
-            api_res['published_date'].append(doc['published_date'])
-        else:
-            api_res['published_date'].append('None')
-
-    return api_res
+    return search_res
 
 def list2dict(list_data, key='url'):
     dict_data = {}
