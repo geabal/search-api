@@ -3,6 +3,9 @@ from sentence_transformers import SentenceTransformer
 import torch
 from pymongo import MongoClient
 import math
+import certifi
+#from data import secret
+# host = secret.host
 
 import boto3
 
@@ -23,13 +26,16 @@ def get_parameter(parameter_name, isDescrypt=False):
 
 # 몽고db 연결
 host = get_parameter('/search-api/prod/mongoDBKey', isDescrypt=True)
-client = MongoClient(host, 27017)
+
+ca = certifi.where()
+client = MongoClient(host, 27017, tlsCAFile=ca)
 db = client['Document_DB']
 chunk_collection = db['SUMMARY_INFO_B']
 title_collection = db['TITLE']
 
 # LLM 모델 로드
-model_path =  get_parameter('/search-api/prod/model-path')
+#model_path =  get_parameter('/search-api/prod/model-path')
+model_path = secret.model_path
 
 model = SentenceTransformer(model_path)
 

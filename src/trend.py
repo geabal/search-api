@@ -1,6 +1,9 @@
 from datetime import datetime, timedelta
 from pymongo import MongoClient
 from dateutil.parser import parse
+import certifi
+#from data import secret
+
 import boto3
 
 # 파라메터 가져오기
@@ -20,7 +23,10 @@ def get_parameter(parameter_name, isDescrypt=False):
 
 # 몽고db 연결
 host = get_parameter('/search-api/prod/mongoDBKey', isDescrypt=True)
-client = MongoClient(host, 27017)
+#host = secret.host
+
+ca = certifi.where()
+client = MongoClient(host, 27017, tlsCAFile=ca)
 db = client['TREND']
 trend_collection = db['TREND_INFO']
 

@@ -1,6 +1,7 @@
 from typing import Union
 from fastapi import FastAPI
 import src.hybrid_search as hs
+import src.hybrid_search2 as hs2
 import src.trend as tr
 
 app = FastAPI()
@@ -15,6 +16,14 @@ def search(q: Union[str, None] = None):
         return {"q":None, "result":[], "status": 200}
     
     res = hs.hybrid_search(user_qeury=q)
+    return res
+
+@app.get("/search2")
+def search(q: Union[str, None] = None):
+    if not q:
+        return {"q":None, "result":[], "status": 200}
+    
+    res = hs2.hybrid_search(user_qeury=q)
     return res
 
 @app.get("/trend")
