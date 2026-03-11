@@ -19,7 +19,7 @@ def search(q: Union[str, None] = None):
     return res
 
 @app.get("/search2")
-def search(q: Union[str, None] = None):
+def search2(q: Union[str, None] = None):
     if not q:
         return {"q":None, "result":[], "status": 200}
     

@@ -33,8 +33,8 @@ db = client['Document_DB']
 collection = db['SUMMARY_INFO_C']
 
 # LLM 모델 로드
-#model_path =  get_parameter('/search-api/prod/model-path')
-model_path = secret.model_path
+model_path =  get_parameter('/search-api/prod/model-path')
+#model_path = secret.model_path
 
 model = SentenceTransformer(model_path)
 
