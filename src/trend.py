@@ -2,7 +2,9 @@ from datetime import datetime, timedelta
 from pymongo import MongoClient
 from dateutil.parser import parse
 import certifi
-#from data import secret
+
+# from data import secret
+# host = secret.host
 
 import boto3
 
@@ -23,7 +25,6 @@ def get_parameter(parameter_name, isDescrypt=False):
 
 # 몽고db 연결
 host = get_parameter('/search-api/prod/mongoDBKey', isDescrypt=True)
-#host = secret.host
 
 ca = certifi.where()
 client = MongoClient(host, 27017, tlsCAFile=ca)
