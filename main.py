@@ -1,7 +1,7 @@
 from typing import Union
 from fastapi import FastAPI
 
-import hybrid_search as hs
+import src.hybrid_search as hs
 import src.trend as tr
 
 app = FastAPI()
