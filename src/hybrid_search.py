@@ -33,7 +33,7 @@ model_path =  get_parameter('/search-api/prod/model-path')
 ca = certifi.where()
 client = MongoClient(host, 27017, tlsCAFile=ca)
 db = client['Document_DB']
-collection = db['SUMMARY_INFO_C']
+collection = db['SUMMARY_INFO_D']
 
 # LLM 모델 로드
 model = SentenceTransformer(model_path)
@@ -113,6 +113,7 @@ def concat(vec_result, text_result, MIN_SCORE:float=0.02, delta=0.02):
     result = prettify(result)
     return result
 
+
 def vector_search(user_query: str, filter: Optional[Dict] = {}) -> None:
     """
     title 콜렉션에서 벡터 검색으로 연관 문서를 찾는다.
@@ -124,60 +125,38 @@ def vector_search(user_query: str, filter: Optional[Dict] = {}) -> None:
 
     query_embedding = model.encode(user_query).tolist()
 
-    pipeline = [
-        # 첫 번째 벡터 필드(vector_field_1) 검색
-        {
+    pipeline = [{
             "$vectorSearch": {
-                "index": "vector_index", 
-                "path": "chunk_vec",
-                "queryVector": query_embedding,
-                "numCandidates": 50,
-                "limit": 40
-            }
-        },
-        # 결과 구분을 위한 가중치 또는 태그 추가 (선택 사항)
-        { "$set": { "search_source": "field_1" } },
-        
-        # 두 번째 벡터 필드(vector_field_2) 검색 결과를 합침
-        {
-            "$unionWith": {
-                "coll": "SUMMARY_INFO_C",
-                "pipeline": [
-                    {
-                        "$vectorSearch": {
-                            "index": "vector_index",
-                            "path": "title_vec",
-                            "queryVector": query_embedding,
-                            "numCandidates": 50,
-                            "limit": 40
-                        }
-                    },
-                    { "$set": { "search_source": "field_2" } }
-                ]
-            }
-        },
-        
-        # 중복 제거 및 점수 합산 (Reranking)
-        {
-            "$group": {
-                "_id": "$_id",
-                "final_score": { "$sum": { "$meta": "vectorSearchScore" } },
-                "doc": { "$first": "$$ROOT" }
-            }
-        },
-        { "$sort": { "final_score": -1 } },
-        { "$limit": 40 }
-        
+            #벡터 인덱스의 이름
+            "index": "vector_index",
+            "limit": 40,
+            "numCandidates": 50,
+            "path": "title_vec", # 벡터 인덱스로 지정된 컬럼 이름
+            "queryVector": query_embedding,
+            #"filter":{'url': {"$in":urls}}
+    }
+    },
+    {
+        '$project':{
+            '_id':1,
+            'title':1,
+            'chunk':1,
+            'url':1,
+            'published_date':1,
+            'score':{'$meta':'vectorSearchScore'}
+        }
+    }
     ]
-
 
     # Execute the aggregation `pipeline` and store the results in `results`
     cursor = collection.aggregate(pipeline=pipeline)
     result = []
-    for row in cursor:
-        doc = row['doc']
-        doc['score'] = row['final_score']
+    for doc in cursor:
         result.append(doc)
+    # for row in cursor:
+    #     doc = row['doc']
+    #     doc['score'] = row['final_score']
+    #     result.append(doc)
   
     return result
 
@@ -201,7 +180,7 @@ def text_search(user_query:str):
             {
                 "text": {
                 "query": user_query,
-                "path": "title_norm",
+                "path": "title_words",
                 "score": {
                     "boost": {
                     "value": 2
@@ -222,7 +201,7 @@ def text_search(user_query:str):
             {
                 "text": {
                 "query": user_query,
-                "path": "chunk_norm",
+                "path": "chunk_words",
                 "score": {
                     "boost": {
                     "value": 2
