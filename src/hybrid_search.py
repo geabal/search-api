@@ -236,8 +236,11 @@ def prettify(search_res):
     '''
     for i, row in enumerate(search_res):
         search_res[i]['_id'] = str(search_res[i]['_id'])
-        if math.isnan(search_res[i]['published_date']):
-            search_res[i]['published_date'] = 'None'
+        try:
+            if math.isnan(search_res[i]['published_date']):
+                search_res[i]['published_date'] = 'None'
+        except:
+            continue
 
     return search_res
 
