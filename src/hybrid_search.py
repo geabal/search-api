@@ -240,6 +240,7 @@ def prettify(search_res):
             if math.isnan(search_res[i]['published_date']):
                 search_res[i]['published_date'] = 'None'
         except:
+            search_res[i]['published_date'] = str(search_res[i]['published_date'])
             continue
 
     return search_res
