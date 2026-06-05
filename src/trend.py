@@ -6,7 +6,7 @@ import certifi
 # from data import secret
 # host = secret.host
 
-import boto3
+# import boto3
 
 # 파라메터 가져오기
 # SSM 클라이언트 생성

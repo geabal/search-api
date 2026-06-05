@@ -113,7 +113,15 @@ def text_search(user_query:str):
     ]
 
     cursor = collection.aggregate(pipeline=pipeline)
-    res = [doc for doc in cursor]
+    urls = set()
+    res = []
+    # 중복 제거. 기본적으로 검색 함수는 score 순으로 주어지므로 가장 먼저 들어오는 id의 청크만 남기면 됨.
+    for doc in cursor:
+        if doc['url'] not in urls:
+            res.append(doc)
+            urls.add(doc['url'])
+        
+    #res = [doc for doc in cursor]
         
     return res
 
