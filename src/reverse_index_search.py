@@ -31,6 +31,8 @@ client = MongoClient(host, 27017, tlsCAFile=ca)
 db = client['Document_DB']
 collection = db['SUMMARY_INFO_D']
 
+MAX_RESULT = 100
+
 
 def search(user_qeury:str=''):
     '''
@@ -116,10 +118,14 @@ def text_search(user_query:str):
     urls = set()
     res = []
     # 중복 제거. 기본적으로 검색 함수는 score 순으로 주어지므로 가장 먼저 들어오는 id의 청크만 남기면 됨.
+    i = 0
     for doc in cursor:
         if doc['url'] not in urls:
             res.append(doc)
             urls.add(doc['url'])
+        i += 1
+        if MAX_RESULT == i:
+            break
         
     #res = [doc for doc in cursor]
         
