@@ -164,24 +164,16 @@ def text_search(
         if doc['url'] not in urls:
             res.append(doc)
             urls.add(doc['url'])
-<<<<<<< HEAD
+            i += 1
+        if MAX_RESULT == i:
+            break
  
     # page_size만큼 원본 문서를 다 받았다면 다음 페이지가 있을 수 있음.
     # 그보다 적게 받았다면 검색 결과 끝에 도달한 것이므로 커서를 노출하지 않음.
     next_cursor = last_token if raw_count == page_size else None
  
     return res, next_cursor
- 
 
-=======
-        i += 1
-        if MAX_RESULT == i:
-            break
-        
-    #res = [doc for doc in cursor]
-        
-    return res
->>>>>>> c63c2b9554303ad96e4bafed629a327c0091a602
 
 def prettify(search_res):
     '''
