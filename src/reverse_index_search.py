@@ -31,6 +31,8 @@ client = MongoClient(host, 27017, tlsCAFile=ca)
 db = client['Document_DB']
 collection = db['SUMMARY_INFO_D']
 
+MAX_RESULT = 100
+
 
 def search(user_qeury:str='',search_after: Optional[str] = None):
     '''
@@ -151,6 +153,7 @@ def text_search(
     last_token = None
  
     # 중복 제거. 기본적으로 검색 함수는 score 순으로 주어지므로 가장 먼저 들어오는 id의 청크만 남기면 됨.
+    i = 0
     for doc in cursor:
         raw_count += 1
         # dedup으로 스킵되는 문서라도 원본 스캔 위치는 진행되므로,
@@ -161,6 +164,7 @@ def text_search(
         if doc['url'] not in urls:
             res.append(doc)
             urls.add(doc['url'])
+<<<<<<< HEAD
  
     # page_size만큼 원본 문서를 다 받았다면 다음 페이지가 있을 수 있음.
     # 그보다 적게 받았다면 검색 결과 끝에 도달한 것이므로 커서를 노출하지 않음.
@@ -169,6 +173,15 @@ def text_search(
     return res, next_cursor
  
 
+=======
+        i += 1
+        if MAX_RESULT == i:
+            break
+        
+    #res = [doc for doc in cursor]
+        
+    return res
+>>>>>>> c63c2b9554303ad96e4bafed629a327c0091a602
 
 def prettify(search_res):
     '''
