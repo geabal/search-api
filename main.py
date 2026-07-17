@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Optional
 from fastapi import FastAPI
 
 import src.trend as tr
@@ -24,9 +24,9 @@ def get_trend(today:str=''):
     return res
 
 @app.get("/search")
-def index_search(q: Union[str, None] = None):
+def index_search(q: Union[str, None] = None, cursor: Union[str, None] = None):
     if not q:
-        return {"q":None, "result":[], "status": 200}
+        return {"q":None, "result":[], "status": 200, "cursor":None}
     
-    res = isearch.search(user_qeury=q)
+    res = isearch.search(user_qeury=q, search_after=cursor)
     return res
